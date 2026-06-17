@@ -1,0 +1,36 @@
+import sqlite3
+
+# 自动创建数据库文件
+conn = sqlite3.connect("db.sqlite", check_same_thread=False)
+c = conn.cursor()
+
+# 创建用户表
+c.execute("""
+CREATE TABLE IF NOT EXISTS users (
+    user TEXT PRIMARY KEY,
+    points INTEGER DEFAULT 0
+)
+""")
+
+conn.commit()
+
+# ========== 增加积分 ==========
+def add_points(user, pts):
+    # 如果用户不存在就创建
+    c.execute("INSERT OR IGNORE INTO users(user, points) VALUES(?,0)", (user,))
+    
+    # 更新积分
+    c.execute(
+        "UPDATE users SET points = points + ? WHERE user=?",
+        (pts, user)
+    )
+    conn.commit()
+
+# ========== 查询积分 ==========
+def get_points(user):
+    c.execute("SELECT points FROM users WHERE user=?", (user,))
+    row = c.fetchone()
+    
+    if row:
+        return row[0]
+    return 0
